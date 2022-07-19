@@ -16,8 +16,8 @@ def create_user(request):
     serializer=usersSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-    return Response(serializer.data)
-    
+        return Response(serializer.data)
+    return Response(serializer.error_messages)
 
    
 
