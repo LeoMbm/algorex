@@ -1,6 +1,7 @@
 import os
 
 import requests
+from twelvedata import TDClient
 from django.http import HttpResponse
 from django.shortcuts import render
 
@@ -10,7 +11,9 @@ from rest_framework.response import Response
 
 from Algorex.settings import env
 from trade.serializers import TradeSerializer
-
+key = "abe6a366922b4b7f87fc2c2fef7948a7"
+# Initialize client - apikey parameter is requiered
+td = TDClient(apikey=key)
 
 @api_view(['POST'])
 def trade_open(request):
@@ -21,10 +24,26 @@ def trade_open(request):
 
 
 @api_view(['GET'])
-def get_pricemarket(request):
-    key = 'mQdoYVZswlthedMwY1AH'
-    url = 'https://marketdata.tradermade.com/api/v1/live?'
-    querystring = {"currency": "USDJPY", "api_key": key}
-    response = requests.get(url, params=querystring)
-    return Response(response)
+def get_pricemarket(request, symbol_name):
+# Construct the necessary time series
+    ts = td.time_series(
+        symbol=symbol_name,
+        interval="1min",
+        outputsize=20,
+    )
+    return Response(ts.as_json())
 
+@api_view(['GET'])
+def get_realtime_price(request, symbol):
+    url = f'https://api.twelvedata.com/price?symbol={symbol}&apikey={key}'
+    res = requests.get(url).json()
+
+    return Response(res)
+
+
+@api_view(['GET'])
+def get_list_cryptocurrency(request):
+    url = 'https://api.twelvedata.com/cryptocurrencies'
+    res = requests.get(url).json()
+
+    return Response(res)

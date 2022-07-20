@@ -1,8 +1,10 @@
 from django.urls import path
 
-from trade.views import trade_open, get_pricemarket
+from trade.views import trade_open, get_pricemarket, get_list_cryptocurrency, get_realtime_price
 
 urlpatterns = [
     path('open/', trade_open, name='open-trade'),
-    path('all/', get_pricemarket, name='all_pricemarket'),
+    path('<str:symbol_name>/marketprice/', get_pricemarket, name='get_pricemarket'),
+    path('all/cryptocurrency/', get_list_cryptocurrency, name='get_pricemarket'),
+    path('<str:symbol>/price/', get_realtime_price, name='get_realtime_price'),
 ]
