@@ -9,18 +9,8 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-import environ
-<<<<<<< HEAD
-env = environ.Env()
-environ.Env.read_env()
-from dotenv import load_dotenv
-load_dotenv()
-=======
 
-env = environ.Env()
 
-environ.Env.read_env()
->>>>>>> wire
 
 from pathlib import Path
 import os
@@ -29,7 +19,7 @@ import environ
 
 env = environ.Env()
 # reading .env file
-environ.Env.read_env()
+environ.Env.read_env("../.env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = "django-insecure-3_n2u5c7wljt$pvxi-u=^&x+(!+_ebd$hs*_jjl5!z9x9)^4zf"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -56,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-<<<<<<< HEAD
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth.registration',
@@ -65,11 +54,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'users',
-=======
-    'users',
-    'trade',
-    'rest_framework'
->>>>>>> wire
 ]
 SITE_ID = 1
 
@@ -111,11 +95,11 @@ WSGI_APPLICATION = 'Algorex.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env('POSTGRES_DB_NAME'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST'),
-        'PORT': env('POSTGRES_PORT'),
+        'NAME': os.getenv('POSTGRES_DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
 
