@@ -10,10 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import environ
+<<<<<<< HEAD
+env = environ.Env()
+environ.Env.read_env()
+from dotenv import load_dotenv
+load_dotenv()
+=======
 
 env = environ.Env()
 
 environ.Env.read_env()
+>>>>>>> wire
 
 from pathlib import Path
 import os
@@ -49,10 +56,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+<<<<<<< HEAD
+    'rest_framework',
+    'rest_framework.authtoken',
+    'dj_rest_auth.registration',
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'users',
+=======
     'users',
     'trade',
     'rest_framework'
+>>>>>>> wire
 ]
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -142,3 +161,17 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+AUTH_USER_MODEL = 'users.Profile'
+ACCOUNT_ADAPTER = 'users.adapter.CustomAccountAdapter'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+REST_AUTH_SERIALIZERS = {
+'USER_DETAILS_SERIALIZER': 'users.serializers.CustomUserDetailsSerializer',
+}
+
+
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
+}
