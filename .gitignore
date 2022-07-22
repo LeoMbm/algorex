@@ -1,7 +1,4 @@
-<<<<<<< HEAD
+my_env
 .env
-=======
-.env
-Algorex/.env
+__pycache__
 
->>>>>>> wire
