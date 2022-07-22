@@ -10,12 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import environ
+<<<<<<< HEAD
 env = environ.Env()
 environ.Env.read_env()
 from dotenv import load_dotenv
 load_dotenv()
+=======
+
+env = environ.Env()
+
+environ.Env.read_env()
+>>>>>>> wire
 
 from pathlib import Path
+import os
+import dotenv
+import environ
+
+env = environ.Env()
+# reading .env file
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+<<<<<<< HEAD
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth.registration',
@@ -50,6 +65,11 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'users',
+=======
+    'users',
+    'trade',
+    'rest_framework'
+>>>>>>> wire
 ]
 SITE_ID = 1
 
@@ -103,6 +123,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
+AUTH_USER_MODEL = 'users.Profile'
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
