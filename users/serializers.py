@@ -10,3 +10,4 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'first_name', 'last_name', 'password', 'adress']
 
     validate_password = make_password
+
