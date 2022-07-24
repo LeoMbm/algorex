@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'users',
     'trade',
     'rest_framework',
-
 ]
 SITE_ID = 1
 
