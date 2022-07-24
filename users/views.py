@@ -1,8 +1,5 @@
-from django.shortcuts import render
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
 from users.serializers import ProfileSerializer
 
 
@@ -12,3 +9,4 @@ def create_user(request):
     if serializer.is_valid():
         serializer.save()
     return Response(serializer.data)
+

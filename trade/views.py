@@ -20,9 +20,10 @@ td = TDClient(apikey=key)
 
 # TODO: Read about viewset
 
+
 @api_view(['POST'])
 def trade_open(request):
-    serializer = TradeSerializer(data=request.data)
+    serializer = TradeSerializer(data=request)
     if serializer.is_valid():
         serializer.save()
     return Response(serializer.data)
@@ -37,6 +38,7 @@ def get_pricemarket(request, symbol_name):
     )
     return Response(ts.as_json())
 
+
 @api_view(['GET'])
 def get_realtime_price(request, symbol):
     url = f'https://api.twelvedata.com/price?symbol={symbol}&apikey={key}'
@@ -50,3 +52,5 @@ def get_list_cryptocurrency(request):
     res = requests.get(url).json()
 
     return Response(res)
+
+

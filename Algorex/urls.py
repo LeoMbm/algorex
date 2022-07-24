@@ -27,3 +27,4 @@ urlpatterns = [
     path('', include('users.urls'))
 
 ]
+
