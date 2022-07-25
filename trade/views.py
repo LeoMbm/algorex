@@ -92,7 +92,7 @@ def get_pricemarket(request, symbol_name):
 
 @api_view(['GET'])
 def get_realtime_price(request, symbol):
-    url = f'https://api.twelvedata.com/price?symbol={symbol}&apikey={key}'
+    url = f'https://data.messari.io/api/v1/assets/{symbol}/metrics/market-data'
     res = requests.get(url).json()
 
     return Response(res)
