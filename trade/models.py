@@ -23,11 +23,10 @@ class Wire(models.Model):
     user_id = models.ForeignKey(users.models.Profile, on_delete=models.CASCADE)
     amount = models.IntegerField(null=True, blank=True)
     withdraw = models.BooleanField(null=True, blank=True)
+
     def save(self, *args, **kwargs):
-        if self.withdraw == True:
-             self.amount = self.amount * -1
+        if self.withdraw:
+            self.amount = self.amount * -1
         else:
             self.amount = self.amount * 1
         super(Wire, self).save(*args, **kwargs)
-    
-  

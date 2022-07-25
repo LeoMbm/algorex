@@ -1,7 +1,4 @@
-
-
 import os
-
 from django.db.models.functions import Coalesce
 from django.template.defaulttags import url
 import requests
@@ -11,8 +8,8 @@ from twelvedata import TDClient
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum
-from trade.models import Wire,Trade
-from trade.serializers import  TradeSerializer, WireSerializer
+from trade.models import Wire, Trade
+from trade.serializers import TradeSerializer, WireSerializer
 from users.models import Profile
 from django.db.models import F
 from collections import Counter
@@ -28,10 +25,9 @@ td = TDClient(apikey=key)
 #     super().__init__(**kwargs)
 #     self.requests = None
 
-#Wire
+# Wire
 @api_view(['POST'])
 def create_wire(request):
-    
     wire_total=Wire.objects.filter(user_id=request.user).aggregate(result=Sum('amount'))
     trade_price=Trade.objects.filter(profile_id=request.user).aggregate(result=Sum((F('close_price') - F('open_price'))*F('quantity')))
     # balance=dict(Counter(wire_total)+Counter(trade_price))
@@ -48,13 +44,14 @@ def create_wire(request):
         return Response(serializer.errors)
 
 
+
+
 @api_view(['GET'])
 def index_wire(request):
-    wire=Wire.objects.filter(user_id=request.user)
-    serializer=WireSerializer(wire,many=True)
+    wire = Wire.objects.filter(user_id=request.user)
+    serializer = WireSerializer(wire, many=True)
     print(type(serializer))
     return Response(serializer.data)
-
 
 
 @api_view(['GET'])
@@ -72,7 +69,9 @@ def index_balance(request):
         # profile.update(balance)
         return Response(balance)
 
-#trade
+
+
+# trade
 @api_view(['POST'])
 def trade_open(request):
     serializer = TradeSerializer(data=request)
@@ -106,5 +105,3 @@ def get_list_cryptocurrency(request):
     res = requests.get(url).json()
 
     return Response(res)
-
-
