@@ -2,19 +2,14 @@
 
 import os
 
-
+from django.template.defaulttags import url
 import requests
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from twelvedata import TDClient
-from django.http import HttpResponse
-from django.shortcuts import render
-
-# Create your views here.
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum
-from Algorex.settings import env
 from trade.models import Wire,Trade
 from trade.serializers import  TradeSerializer, WireSerializer
 from users.models import Profile
