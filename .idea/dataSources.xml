@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-<<<<<<< HEAD
-    <data-source source="LOCAL" name="algorex_db@localhost" uuid="21443f4f-ec61-4cee-a944-4f5392b19396">
-=======
-    <data-source source="LOCAL" name="Algorex" uuid="7645f6f8-1ea6-4ad4-af8f-2b12448fe2aa">
->>>>>>> dev
+    <data-source source="LOCAL" name="Algorex" uuid="295a253c-576e-409b-bc71-fdfb9d520027">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
