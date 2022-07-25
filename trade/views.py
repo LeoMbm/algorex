@@ -2,6 +2,7 @@
 
 import os
 
+from django.db.models.functions import Coalesce
 from django.template.defaulttags import url
 import requests
 from rest_framework.views import APIView
@@ -33,16 +34,19 @@ def create_wire(request):
     
     wire_total=Wire.objects.filter(user_id=request.user).aggregate(result=Sum('amount'))
     trade_price=Trade.objects.filter(profile_id=request.user).aggregate(result=Sum((F('close_price') - F('open_price'))*F('quantity')))
-    balance=dict(Counter(wire_total)+Counter(trade_price))
-    if balance['result'] <= 0:
-       return Response({"message":"not enough money"})
-    else:
+    # balance=dict(Counter(wire_total)+Counter(trade_price))
+    # if balance['result'] <= 0:
+    #    return Response({"message":"not enough money"})
+    # else:
+    try:
       serializer = WireSerializer(data=request.data)
 
       if serializer.is_valid():
            serializer.save(user_id=request.user)
            return Response(serializer.data)
-    return Response(serializer.errors)
+    except Exception as e:
+        return Response(serializer.errors)
+
 
 @api_view(['GET'])
 def index_wire(request):
@@ -55,13 +59,18 @@ def index_wire(request):
 
 @api_view(['GET'])
 def index_balance(request):
-    wire_total=Wire.objects.filter(user_id=request.user).aggregate(balance=Sum('amount'))
-    trade_price=Trade.objects.filter(profile_id=request.user).aggregate(balance=Sum((F('close_price') - F('open_price'))*F('quantity')))
+    #FIXME: Can't have 0 in balance field
+
+    default_balance = {"balance": 5}
+    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
+    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
     profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
-    balance=dict(Counter(wire_total)+Counter(trade_price))
-    profile.update(balance)
-    
-    return Response(profile)
+    if wire_total is None and trade_price is None:
+        return Response(default_balance)
+    else:
+        balance = dict(Counter(wire_total) + Counter(trade_price)+ Counter(default_balance))
+        # profile.update(balance)
+        return Response(balance)
 
 #trade
 @api_view(['POST'])
