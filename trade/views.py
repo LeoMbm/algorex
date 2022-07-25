@@ -22,11 +22,7 @@ key = "abe6a366922b4b7f87fc2c2fef7948a7"
 td = TDClient(apikey=key)
 
 
-# class Trade(APIView):
-
-# def __init__(self, request, **kwargs):
-#     super().__init__(**kwargs)
-#     self.requests = None
+# TODO: Read about viewset
 
 # Wire
 @api_view(['POST'])
@@ -84,7 +80,6 @@ def trade_open(request):
         serializer.save()
     return Response(serializer.data)
 
-
 @api_view(['GET'])
 def get_pricemarket(request, symbol_name):
     # Construct the necessary time series
@@ -102,7 +97,6 @@ def get_realtime_price(request, symbol):
     res = requests.get(url).json()
 
     return Response(res)
-
 
 @api_view(['GET'])
 def get_list_cryptocurrency(request):
