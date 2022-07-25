@@ -80,17 +80,6 @@ def trade_open(request):
 
 
 @api_view(['GET'])
-def get_pricemarket(request, symbol_name):
-    # Construct the necessary time series
-    ts = td.time_series(
-        symbol=symbol_name,
-        interval="1min",
-        outputsize=20,
-    )
-    return Response(ts.as_json())
-
-
-@api_view(['GET'])
 def get_realtime_price(request, symbol):
     url = f'https://data.messari.io/api/v1/assets/{symbol}/metrics/market-data'
     res = requests.get(url).json()
