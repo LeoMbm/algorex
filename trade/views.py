@@ -57,7 +57,6 @@ def index_wire(request):
 @api_view(['GET'])
 def index_balance(request):
     #FIXME: Can't have 0 in balance field
-
     default_balance = {"balance": 5}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
