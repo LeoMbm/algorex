@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'users',
     'trade',
-    'rest_framework_swagger',
+    
     
 ]
 SITE_ID = 1

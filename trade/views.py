@@ -63,16 +63,19 @@ def index_wire(request):
 def index_balance(request):
     #FIXME: Can't have 0 in balance field
 
-    default_balance = {"balance":"0"}
+    default_balance = {"balance":0}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
     profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
-    if wire_total is None and trade_price is None:
-        return Response(default_balance)
+    if wire_total['balance'] ==0 and trade_price['balance'] ==0:
+        profile.update(default_balance)
+
+        return Response(profile)
     else:
         balance = dict(Counter(wire_total) + Counter(trade_price))
-        #profile.update(balance)
-        return Response(wire_total)
+        profile.update(balance)
+        print(wire_total['balance'])
+        return Response(profile)
 
 
 
