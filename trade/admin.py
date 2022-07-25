@@ -5,3 +5,4 @@ from trade.models import Trade,Wire
 
 admin.site.register(Trade)
 admin.site.register(Wire)
+

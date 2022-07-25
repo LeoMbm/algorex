@@ -38,15 +38,15 @@ def create_wire(request):
     balance = dict(Counter(wire_total) + Counter(trade_price))
     print(wire_total)
     serializer = WireSerializer(data=request.data)
-    amount=serializer.initial_data['amount']
-    withdraw=serializer.initial_data['withdraw']
+    amount = serializer.initial_data['amount']
+    withdraw = serializer.initial_data['withdraw']
     if wire_total['balance']+trade_price['balance']-amount<0 and withdraw==True:
         data = {"message": "not enough money",}
         return Response(data)
     else:
-      if serializer.is_valid():
-           serializer.save(user_id=request.user)
-           return Response(serializer.data)
+        if serializer.is_valid():
+            serializer.save(user_id=request.user)
+            return Response(serializer.data)
     return Response(serializer.errors)
 
 
@@ -77,8 +77,6 @@ def index_balance(request):
         return Response(profile)
 
 
-
-# trade
 @api_view(['POST'])
 def trade_open(request):
     serializer = TradeSerializer(data=request)
