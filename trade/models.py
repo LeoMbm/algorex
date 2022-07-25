@@ -24,7 +24,7 @@ class Wire(models.Model):
     amount = models.IntegerField(null=True, blank=True)
     withdraw = models.BooleanField(null=True, blank=True)
     def save(self, *args, **kwargs):
-        if self.withdraw == True:
+        if self.withdraw:
              self.amount = self.amount * -1
         else:
             self.amount = self.amount * 1

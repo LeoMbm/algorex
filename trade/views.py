@@ -1,5 +1,6 @@
 
 
+
 import os
 
 
@@ -39,12 +40,15 @@ def create_wire(request):
     wire_total=Wire.objects.filter(user_id=request.user).aggregate(result=Sum('amount'))
     trade_price=Trade.objects.filter(profile_id=request.user).aggregate(result=Sum((F('close_price') - F('open_price'))*F('quantity')))
     balance=dict(Counter(wire_total)+Counter(trade_price))
-    if balance['result'] <= 0:
-       return Response({"message":"not enough money"})
+    serializer = WireSerializer(data=request.data)
+    
+    if balance['result']<0:
+        data = {"message": "not enough money",}
+        return Response(data)
     else:
-      serializer = WireSerializer(data=request.data)
 
       if serializer.is_valid():
+        
            serializer.save(user_id=request.user)
            return Response(serializer.data)
     return Response(serializer.errors)
@@ -53,19 +57,26 @@ def create_wire(request):
 def index_wire(request):
     wire=Wire.objects.filter(user_id=request.user)
     serializer=WireSerializer(wire,many=True)
-    print(type(serializer))
+    
     return Response(serializer.data)
 
 
-
+from django.db.models.functions import Coalesce
 @api_view(['GET'])
 def index_balance(request):
-    wire_total=Wire.objects.filter(user_id=request.user).aggregate(balance=Sum('amount'))
-    trade_price=Trade.objects.filter(profile_id=request.user).aggregate(balance=Sum((F('close_price') - F('open_price'))*F('quantity')))
-    profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
-    balance=dict(Counter(wire_total)+Counter(trade_price))
-    profile.update(balance)
     
+    x={"balance":0}
+    wire_total=Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
+    trade_price=Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')),0))
+    profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
+    
+    balance=dict(Counter(wire_total)+Counter(trade_price)+Counter(x))
+    if wire_total == 0 or trade_price ==0:
+         x = wire_total +trade_price
+         print(x)
+         return Response(x)
+    profile.update(balance)
+    print(balance)
     return Response(profile)
 
 #trade
