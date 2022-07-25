@@ -31,22 +31,22 @@ td = TDClient(apikey=key)
 # Wire
 @api_view(['POST'])
 def create_wire(request):
-    wire_total=Wire.objects.filter(user_id=request.user).aggregate(result=Sum('amount'))
-    trade_price=Trade.objects.filter(profile_id=request.user).aggregate(result=Sum((F('close_price') - F('open_price'))*F('quantity')))
+    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
+    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
     balance=dict(Counter(wire_total)+Counter(trade_price))
     serializer = WireSerializer(data=request.data)
     
-    if balance['result']<0:
-        data = {"message": "not enough money",}
-        return Response(data)
-    else:
+    # if balance['balance']<0:
+    #     data = {"message": "not enough money",}
+    #     return Response(data)
+    # else:
 
-      if serializer.is_valid():
+    if serializer.is_valid():
         
            serializer.save(user_id=request.user)
            return Response(serializer.data)
     
-      return Response(serializer.errors)
+    return Response(serializer.errors)
 
 
 
@@ -69,7 +69,6 @@ def index_balance(request):
     profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
     if wire_total['balance'] ==0 and trade_price['balance'] ==0:
         profile.update(default_balance)
-
         return Response(profile)
     else:
         balance = dict(Counter(wire_total) + Counter(trade_price))
