@@ -1,22 +1,15 @@
-
-
 import os
-
-
+from django.db.models.functions import Coalesce
+from django.template.defaulttags import url
 import requests
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from twelvedata import TDClient
-from django.http import HttpResponse
-from django.shortcuts import render
-
-# Create your views here.
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum
-from Algorex.settings import env
-from trade.models import Wire,Trade
-from trade.serializers import  TradeSerializer, WireSerializer
+from trade.models import Wire, Trade
+from trade.serializers import TradeSerializer, WireSerializer
 from users.models import Profile
 from django.db.models import F
 from collections import Counter
@@ -32,43 +25,53 @@ td = TDClient(apikey=key)
 #     super().__init__(**kwargs)
 #     self.requests = None
 
-#Wire
+# Wire
 @api_view(['POST'])
 def create_wire(request):
-    
     wire_total=Wire.objects.filter(user_id=request.user).aggregate(result=Sum('amount'))
     trade_price=Trade.objects.filter(profile_id=request.user).aggregate(result=Sum((F('close_price') - F('open_price'))*F('quantity')))
-    balance=dict(Counter(wire_total)+Counter(trade_price))
-    if balance['result'] <= 0:
-       return Response({"message":"not enough money"})
-    else:
+    # balance=dict(Counter(wire_total)+Counter(trade_price))
+    # if balance['result'] <= 0:
+    #    return Response({"message":"not enough money"})
+    # else:
+    try:
       serializer = WireSerializer(data=request.data)
 
       if serializer.is_valid():
            serializer.save(user_id=request.user)
            return Response(serializer.data)
-    return Response(serializer.errors)
+    except Exception as e:
+        return Response(serializer.errors)
+
+
+
 
 @api_view(['GET'])
 def index_wire(request):
-    wire=Wire.objects.filter(user_id=request.user)
-    serializer=WireSerializer(wire,many=True)
+    wire = Wire.objects.filter(user_id=request.user)
+    serializer = WireSerializer(wire, many=True)
     print(type(serializer))
     return Response(serializer.data)
 
 
-
 @api_view(['GET'])
 def index_balance(request):
-    wire_total=Wire.objects.filter(user_id=request.user).aggregate(balance=Sum('amount'))
-    trade_price=Trade.objects.filter(profile_id=request.user).aggregate(balance=Sum((F('close_price') - F('open_price'))*F('quantity')))
-    profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
-    balance=dict(Counter(wire_total)+Counter(trade_price))
-    profile.update(balance)
-    
-    return Response(profile)
+    #FIXME: Can't have 0 in balance field
 
-#trade
+    default_balance = {"balance": 5}
+    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
+    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
+    profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
+    if wire_total is None and trade_price is None:
+        return Response(default_balance)
+    else:
+        balance = dict(Counter(wire_total) + Counter(trade_price)+ Counter(default_balance))
+        # profile.update(balance)
+        return Response(balance)
+
+
+
+# trade
 @api_view(['POST'])
 def trade_open(request):
     serializer = TradeSerializer(data=request)
@@ -102,5 +105,3 @@ def get_list_cryptocurrency(request):
     res = requests.get(url).json()
 
     return Response(res)
-
-
