@@ -31,24 +31,22 @@ td = TDClient(apikey=key)
 # Wire
 @api_view(['POST'])
 def create_wire(request):
+    # FIXME: I can withdraw below 0 but not after being below 0
+    default_balance = {"balance": 0}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
-    balance=dict(Counter(wire_total)+Counter(trade_price))
+    balance = dict(Counter(wire_total) + Counter(trade_price))
+    print(wire_total)
     serializer = WireSerializer(data=request.data)
     amount=serializer.initial_data['amount']
     withdraw=serializer.initial_data['withdraw']
-    
-    
     if wire_total['balance']+trade_price['balance']-amount<0 and withdraw==True:
         data = {"message": "not enough money",}
         return Response(data)
     else:
-
       if serializer.is_valid():
-        
            serializer.save(user_id=request.user)
            return Response(serializer.data)
-    
     return Response(serializer.errors)
 
 
@@ -64,8 +62,7 @@ def index_wire(request):
 
 @api_view(['GET'])
 def index_balance(request):
-    #FIXME: Can't have 0 in balance field
-
+    # FIXME: Can't have 0 in balance field
     default_balance = {"balance":0}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
