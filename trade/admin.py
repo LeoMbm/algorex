@@ -1,7 +1,8 @@
 from django.contrib import admin
-
+from trade.models import Trade,Wire 
 # Register your models here.
-from trade.models import Wire, Trade
+
 
 admin.site.register(Trade)
 admin.site.register(Wire)
+
