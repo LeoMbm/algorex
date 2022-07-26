@@ -22,33 +22,27 @@ key = "abe6a366922b4b7f87fc2c2fef7948a7"
 td = TDClient(apikey=key)
 
 
-# class Trade(APIView):
-
-# def __init__(self, request, **kwargs):
-#     super().__init__(**kwargs)
-#     self.requests = None
+# TODO: Read about viewset
 
 # Wire
 @api_view(['POST'])
 def create_wire(request):
+    # FIXME: I can withdraw below 0 but not after being below 0
+    default_balance = {"balance": 0}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
-    balance=dict(Counter(wire_total)+Counter(trade_price))
+    balance = dict(Counter(wire_total) + Counter(trade_price))
+    print(wire_total)
     serializer = WireSerializer(data=request.data)
-    amount=serializer.initial_data['amount']
-    withdraw=serializer.initial_data['withdraw']
-    
-    
+    amount = serializer.initial_data['amount']
+    withdraw = serializer.initial_data['withdraw']
     if wire_total['balance']+trade_price['balance']-amount<0 and withdraw==True:
         data = {"message": "not enough money",}
         return Response(data)
     else:
-
-      if serializer.is_valid():
-        
-           serializer.save(user_id=request.user)
-           return Response(serializer.data)
-    
+        if serializer.is_valid():
+            serializer.save(user_id=request.user)
+            return Response(serializer.data)
     return Response(serializer.errors)
 
 
@@ -115,7 +109,6 @@ def trade_open(request):
         serializer.save()
     return Response(serializer.data)
 
-
 @api_view(['GET'])
 def get_pricemarket(request, symbol_name):
     # Construct the necessary time series
@@ -133,7 +126,6 @@ def get_realtime_price(request, symbol):
     res = requests.get(url).json()
 
     return Response(res)
-
 
 @api_view(['GET'])
 def get_list_cryptocurrency(request):
