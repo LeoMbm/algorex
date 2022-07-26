@@ -107,6 +107,15 @@ def trade_open(request):
         serializer.save()
     return Response(serializer.data)
 
+
+def trade_close(request, trade_id):
+    trade = Trade.objects.filter(id=trade_id, profile_id=request.user)
+    serializer = TradeSerializer(data=request)
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
+
 @api_view(['GET'])
 def get_realtime_price(request, symbol):
     url = f'https://data.messari.io/api/v1/assets/{symbol}/metrics/market-data'
@@ -116,7 +125,6 @@ def get_realtime_price(request, symbol):
 
 @api_view(['GET'])
 def get_list_cryptocurrency(request):
-    # TODO: Use Messari API
     url = 'https://data.messari.io/api/v2/assets'
     res = requests.get(url).json()
 

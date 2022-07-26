@@ -1,14 +1,15 @@
 import requests
 from django.urls import path
 
-from trade.views import  all_open_trade,all_close_trade,all_trade, closed_pnl, current_balance, get_list_cryptocurrency, get_realtime_price,open_pnl, trade_open,create_wire,index_wire
-
+from trade.views import all_open_trade, all_close_trade, all_trade, closed_pnl, current_balance, \
+    get_list_cryptocurrency, get_realtime_price, open_pnl, trade_open, create_wire, index_wire, trade_close
 
 urlpatterns = [
-    path('open/', trade_open, name='open-trade'),
+    path('openTrade/', trade_open, name='open-trade'),
+    path('closeTrade/<int:id>', trade_close, name='close-trade'),
     path('all/cryptocurrency/', get_list_cryptocurrency, name='get_pricemarket'),
     path('<str:symbol>/price/', get_realtime_price, name='get_realtime_price'),
-    path('wire_post/',create_wire,name='wire_post'),
+    path('wire/',create_wire,name='wire_post'),
     path('wire_index/',index_wire,name='wire_index'),
     path('index/',all_trade),
     path('index/open/',all_open_trade),
