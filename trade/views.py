@@ -1,5 +1,5 @@
-
 import os
+from django.db.models import ExpressionWrapper, FloatField
 from django.db.models.functions import Coalesce
 from django.template.defaulttags import url
 import requests
@@ -25,23 +25,22 @@ td = TDClient(apikey=key)
 # Wire
 @api_view(['POST'])
 def create_wire(request):
-    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
-    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
+    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'), 0))
+    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(
+        balance=Coalesce(Sum((F('close_price') - F('open_price')) * F('quantity')), 0))
     balance = dict(Counter(wire_total) + Counter(trade_price))
     print(wire_total)
     serializer = WireSerializer(data=request.data)
     amount = serializer.initial_data['amount']
     withdraw = serializer.initial_data['withdraw']
-    if wire_total['balance']+trade_price['balance']-amount<0 and withdraw==True:
-        data = {"message": "not enough money",}
+    if wire_total['balance'] + trade_price['balance'] - amount < 0 and withdraw == True:
+        data = {"message": "not enough money", }
         return Response(data)
     else:
         if serializer.is_valid():
             serializer.save(user_id=request.user)
             return Response(serializer.data)
     return Response(serializer.errors)
-
-
 
 
 @api_view(['GET'])
@@ -52,72 +51,84 @@ def index_wire(request):
     return Response(serializer.data)
 
 
-
-
 # trade
 
 @api_view(['GET'])
 def all_trade(request):
-    trade= Trade.objects.filter(profile_id=request.user)
-    serializer=TradeSerializer(trade,many=True)
+    trade = Trade.objects.filter(profile_id=request.user)
+    serializer = TradeSerializer(trade, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 def all_open_trade(request):
-    trade= Trade.objects.filter(profile_id=request.user,open=True)
-    serializer=TradeSerializer(trade,many=True)
+    trade = Trade.objects.filter(profile_id=request.user, open=True)
+    serializer = TradeSerializer(trade, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 def all_close_trade(request):
-    trade= Trade.objects.filter(profile_id=request.user,open=False)
-    serializer=TradeSerializer(trade,many=True)
+    trade = Trade.objects.filter(profile_id=request.user, open=False)
+    serializer = TradeSerializer(trade, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 def closed_pnl(request):
-    trade= Trade.objects.filter(profile_id=request.user).aggregate(PNL=Coalesce(Sum(F('close_price')*F('quantity')),0))
-    return Response(trade)  
+    trade = Trade.objects.filter(profile_id=request.user).aggregate(
+        PNL=Coalesce(Sum(F('close_price') * F('quantity')), 0.00))
+    return Response(trade)
+
 
 @api_view(['GET'])
 def open_pnl(request):
-    trade= Trade.objects.filter(profile_id=request.user).aggregate(PNL=Coalesce(Sum(F('open_price')*F('quantity')),0))
+    trade = Trade.objects.filter(profile_id=request.user).aggregate(
+        PNL=Coalesce(Sum(F('open_price') * F('quantity')), 0.00))
     return Response(trade)
+
 
 @api_view(['GET'])
 def current_balance(request):
-    # TODO: Calculate money without open price
-    default_balance = {"balance":0}
-    trade_bool = Trade.objects.filter(profile_id=request.user).values()
-    trade_quantity = Trade.objects.filter(profile_id=request.user).values('quantity')
-    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
-    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
-    print("Trade Bool: " + str(trade_bool[0]['open']))
-    print("Trade Quantity: " + str(trade_quantity))
-    if wire_total['balance'] == 0 and trade_price['balance'] == 0 or wire_total['balance'] + trade_price['balance'] == 0:
+    default_balance = {"balance": 0.00}
+    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'), 0.00))
+    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(
+        balance=Coalesce(Sum((F('close_price') - F('open_price')) * F('quantity')), 0.00))
+    if wire_total['balance'] == 0.00 and trade_price['balance'] == 0.00 or wire_total['balance'] + trade_price[
+        'balance'] == 0.00:
         return Response(default_balance)
     else:
-        for x in trade_bool:
-            if x['open'] is True:
-                balance_not_open = dict(Counter(wire_total) - Counter(trade_price))
-                print("Balance Wire Total: " + str(wire_total))
-                print("Balance Trade Price: " + str(trade_bool))
-                print("Balance Not Open: " + str(balance_not_open))
-                return Response(balance_not_open)
-            else:
-                balance = dict(Counter(wire_total) + Counter(trade_price))
-                print(balance)
-                return Response(balance)
+        balance = dict(Counter(wire_total) + Counter(trade_price))
 
-#jeremy
+        return Response(balance)
+
+
+# jeremy
 @api_view(['POST'])
 def trade_open(request):
+    # TODO: Bug when balance is below 0 and i want to open a new trade > balance
+    wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'), 0.00))
+    trade_price = Trade.objects.filter(profile_id=request.user).aggregate(
+        balance=Coalesce(Sum((F('close_price') - F('open_price')) * F('quantity')), 0.00))
+    open_price = Trade.objects.filter(profile_id=request.user,open=True).aggregate(balance=Coalesce(Sum(F('open_price') * F('quantity')), 0.00))
+    balance = dict(Counter(wire_total) + Counter(trade_price) - Counter(open_price))
     serializer = TradeSerializer(data=request)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
+    data_trade = serializer.initial_data
+    quantity_trade_amount = data_trade.data.get('quantity')
+    open_price_amount = data_trade.data.get('open_price')
+    total_trade_payment = open_price_amount * quantity_trade_amount
+    if total_trade_payment > balance['balance'] or balance['balance'] <= 0.0:
+        data = {"message": "not enough money", }
+        return Response(data)
+    else:
+        serializer = TradeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(profile_id=request.user)
+        print(balance)
+        return Response(serializer.data)
 
 @api_view(['POST'])
+# TODO: Close a trade
 def trade_close(request, trade_id):
     trade = Trade.objects.filter(id=trade_id, profile_id=request.user)
     serializer = TradeSerializer(data=request)
@@ -132,6 +143,7 @@ def get_realtime_price(request, symbol):
     res = requests.get(url).json()
 
     return Response(res)
+
 
 @api_view(['GET'])
 def get_list_cryptocurrency(request):
