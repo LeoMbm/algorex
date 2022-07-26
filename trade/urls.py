@@ -4,8 +4,6 @@ from django.urls import path
 from trade.views import  all_open_trade,all_close_trade,all_trade, closed_pnl, current_balance, get_pricemarket, get_list_cryptocurrency, get_realtime_price,open_pnl, trade_open,create_wire,index_wire
 
 
-# Can't use Class here
-# tr = Trade(requests)
 urlpatterns = [
     path('open/', trade_open, name='open-trade'),
     path('<str:symbol_name>/marketprice/', get_pricemarket, name='get_pricemarket'),
