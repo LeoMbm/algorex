@@ -56,23 +56,52 @@ def index_wire(request):
     return Response(serializer.data)
 
 
+
+
+# trade
+
 @api_view(['GET'])
-def index_balance(request):
-    # FIXME: Can't have 0 in balance field
+def all_trade(request):
+    trade= Trade.objects.filter(profile_id=request.user)
+    serializer=TradeSerializer(trade,many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def all_open_trade(request):
+    trade= Trade.objects.filter(profile_id=request.user,open=True)
+    serializer=TradeSerializer(trade,many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def all_close_trade(request):
+    trade= Trade.objects.filter(profile_id=request.user,open=False)
+    serializer=TradeSerializer(trade,many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def closed_pnl(request):
+    trade= Trade.objects.filter(profile_id=request.user).aggregate(PNL=Coalesce(Sum(F('close_price')*F('quantity')),0))
+    return Response(trade)  
+
+@api_view(['GET'])
+def open_pnl(request):
+    trade= Trade.objects.filter(profile_id=request.user).aggregate(PNL=Coalesce(Sum(F('open_price')*F('quantity')),0))
+    return Response(trade)
+
+@api_view(['GET'])
+def current_balance(request):
     default_balance = {"balance":0}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
-    profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
-
-    if wire_total['balance'] == 0 and trade_price['balance'] == 0:
-        profile.update(default_balance)
-        return Response(profile)
+    
+    if wire_total['balance'] ==0 and trade_price['balance'] == 0 or wire_total['balance'] + trade_price['balance'] == 0 :
+        return Response(default_balance)
     else:
         balance = dict(Counter(wire_total) + Counter(trade_price))
-        profile.update(balance)
-        return Response(profile)
+        
+        return Response(balance)
 
-
+#jeremy
 @api_view(['POST'])
 def trade_open(request):
     serializer = TradeSerializer(data=request)
