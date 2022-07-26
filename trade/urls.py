@@ -6,7 +6,7 @@ from trade.views import all_open_trade, all_close_trade, all_trade, closed_pnl, 
 
 urlpatterns = [
     path('openTrade/', trade_open, name='open-trade'),
-    path('closeTrade/<int:id>', trade_close, name='close-trade'),
+    path('<int:trade_id>/closeTrade/', trade_close, name='close-trade'),
     path('all/cryptocurrency/', get_list_cryptocurrency, name='get_pricemarket'),
     path('<str:symbol>/price/', get_realtime_price, name='get_realtime_price'),
     path('wire/',create_wire,name='wire_post'),

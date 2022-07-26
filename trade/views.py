@@ -25,8 +25,6 @@ td = TDClient(apikey=key)
 # Wire
 @api_view(['POST'])
 def create_wire(request):
-    # FIXME: I can withdraw below 0 but not after being below 0
-    default_balance = {"balance": 0}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
     balance = dict(Counter(wire_total) + Counter(trade_price))
@@ -88,16 +86,28 @@ def open_pnl(request):
 
 @api_view(['GET'])
 def current_balance(request):
+    # TODO: Calculate money without open price
     default_balance = {"balance":0}
+    trade_bool = Trade.objects.filter(profile_id=request.user).values()
+    trade_quantity = Trade.objects.filter(profile_id=request.user).values('quantity')
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0))
     trade_price = Trade.objects.filter(profile_id=request.user).aggregate(balance=Coalesce(Sum((F('close_price') - F('open_price'))*F('quantity')), 0))
-    
-    if wire_total['balance'] ==0 and trade_price['balance'] == 0 or wire_total['balance'] + trade_price['balance'] == 0 :
+    print("Trade Bool: " + str(trade_bool[0]['open']))
+    print("Trade Quantity: " + str(trade_quantity))
+    if wire_total['balance'] == 0 and trade_price['balance'] == 0 or wire_total['balance'] + trade_price['balance'] == 0:
         return Response(default_balance)
     else:
-        balance = dict(Counter(wire_total) + Counter(trade_price))
-        
-        return Response(balance)
+        for x in trade_bool:
+            if x['open'] is True:
+                balance_not_open = dict(Counter(wire_total) - Counter(trade_price))
+                print("Balance Wire Total: " + str(wire_total))
+                print("Balance Trade Price: " + str(trade_bool))
+                print("Balance Not Open: " + str(balance_not_open))
+                return Response(balance_not_open)
+            else:
+                balance = dict(Counter(wire_total) + Counter(trade_price))
+                print(balance)
+                return Response(balance)
 
 #jeremy
 @api_view(['POST'])
@@ -107,7 +117,7 @@ def trade_open(request):
         serializer.save()
     return Response(serializer.data)
 
-
+@api_view(['POST'])
 def trade_close(request, trade_id):
     trade = Trade.objects.filter(id=trade_id, profile_id=request.user)
     serializer = TradeSerializer(data=request)
