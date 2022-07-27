@@ -24,7 +24,7 @@ def index_balance(request):
     open_price = Trade.objects.filter(profile_id=request.user,open=True).aggregate(balance=Coalesce(Sum(F('open_price') * F('quantity')), 0.00))
     profile=Profile.objects.filter(id=request.user.id).values('id','username','email','first_name','last_name','adress').first()
 
-    if wire_total['balance'] == 0.00 and trade_price['balance'] == 0.00 or wire_total['balance'] + trade_price['balance'] == 0.00:
+    if wire_total['balance'] == 0.00 and trade_price['balance'] == 0.00 or wire_total['balance'] + trade_price['balance'] - open_price['balance'] == 0.00:
         profile.update(default_balance)
         return Response(profile)
     else:
