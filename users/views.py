@@ -1,5 +1,5 @@
-
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from django.db.models import Sum
 from trade.models import Wire, Trade
@@ -14,9 +14,8 @@ def index_view(request):
     return Response(data)
 
 
-
-
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def index_balance(request):
     default_balance = {"balance":0.00}
     wire_total = Wire.objects.filter(user_id=request.user).aggregate(balance=Coalesce(Sum('amount'),0.00))
