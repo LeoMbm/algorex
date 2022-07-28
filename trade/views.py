@@ -16,9 +16,7 @@ from users.models import Profile
 from django.db.models import F
 from collections import Counter
 from rest_framework.permissions import IsAuthenticated
-key =os.getenv("MESSARI_KEY")
-# Initialize client - apikey parameter is requiered
-td = TDClient(apikey=key)
+
 
 
 
