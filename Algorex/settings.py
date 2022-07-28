@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     'users',
     'trade',
     'corsheaders',
+    'drf_yasg',
+
 ]
 SITE_ID = 1
 
@@ -165,3 +167,9 @@ CORS_ALLOWED_ORIGINS = [
    
     "http://127.0.0.1:8000",
 ]
+
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': '/admin/login',
+    'LOGOUT_URL': '/admin/logout',
+    'LOGOUT_REDIRECT': '/swagger/',
+}

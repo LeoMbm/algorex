@@ -29,3 +29,14 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
     class Meta(UserDetailsSerializer.Meta):
         fields =('pk','username','email','first_name','last_name','adress',)
         read_only_fields=('pk','username',)
+
+
+# Only for Swagger Docs ! Never used this class
+class ProfileSerializer(serializers.Serializer):
+    id = serializers.FloatField(default=0.00)
+    username = serializers.CharField(default="algorex")
+    email = serializers.CharField(default="algorex@me.com")
+    first_name = serializers.CharField(default="Drew")
+    last_name = serializers.CharField(default="Wallace")
+    adress = serializers.CharField(default="Brussels")
+    balance = serializers.FloatField(default=0.00)

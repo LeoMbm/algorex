@@ -4,6 +4,8 @@ from django.db.models.functions import Coalesce
 from django.template.defaulttags import url
 import requests
 from django.utils.timezone import now
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from twelvedata import TDClient
@@ -11,15 +13,18 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from django.db.models import Sum
 from trade.models import Wire, Trade
-from trade.serializers import TradeSerializer, WireSerializer
+from trade.serializers import TradeSerializer, WireSerializer, BalanceSerializer, PNLSerializer
 from users.models import Profile
 from django.db.models import F
 from collections import Counter
 from rest_framework.permissions import IsAuthenticated
 
 
-
-
+wire_response = openapi.Response('Response Description', WireSerializer)
+trade_response = openapi.Response('Response Description', TradeSerializer)
+balance_response = openapi.Response('Response Description', BalanceSerializer)
+pnl_response = openapi.Response('Response Description', PNLSerializer)
+@swagger_auto_schema(methods=['post'], operation_description="You can deposit and withdraw money in your account", request_body=WireSerializer)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_wire(request):
@@ -40,7 +45,7 @@ def create_wire(request):
             return Response(serializer.data)
     return Response(serializer.errors)
 
-
+@swagger_auto_schema(methods=['get'], operation_description="You can see all your deposit or withdraw", responses={200: wire_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def index_wire(request):
@@ -51,7 +56,7 @@ def index_wire(request):
 
 
 # trade
-
+@swagger_auto_schema(methods=['get'], operation_description="You can see all your trade", responses={200: trade_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def all_trade(request):
@@ -59,7 +64,7 @@ def all_trade(request):
     serializer = TradeSerializer(trade, many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(methods=['get'], operation_description="You can see all your trade open", responses={200: trade_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def all_open_trade(request):
@@ -67,7 +72,7 @@ def all_open_trade(request):
     serializer = TradeSerializer(trade, many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(methods=['get'], operation_description="You can see all your trade close", responses={200: trade_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def all_close_trade(request):
@@ -75,7 +80,7 @@ def all_close_trade(request):
     serializer = TradeSerializer(trade, many=True)
     return Response(serializer.data)
 
-
+@swagger_auto_schema(methods=['get'], operation_description="You can see all your profit and lose of closed trades", responses={200: pnl_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def closed_pnl(request):
@@ -83,7 +88,7 @@ def closed_pnl(request):
         PNL=Coalesce(Sum(F('close_price') * F('quantity')), 0.00))
     return Response(trade)
 
-
+@swagger_auto_schema(methods=['get'], operation_description="You can see all your profit and lose of open trades", responses={200: pnl_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def open_pnl(request):
@@ -91,7 +96,7 @@ def open_pnl(request):
         PNL=Coalesce(Sum(F('open_price') * F('quantity')), 0.00))
     return Response(trade)
 
-
+@swagger_auto_schema(methods=['get'], operation_description="You can see your current balance without the open price calculate", responses={200: balance_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def current_balance(request):
@@ -107,7 +112,7 @@ def current_balance(request):
 
         return Response(balance)
 
-
+@swagger_auto_schema(methods=['post'], operation_description="You can open a trade with the symbol(Exemple: BTC, ETH, and more..) and the quantity(Type: Float, Exemple: 1.0 - 0.0025 - 0.4215)", request_body=TradeSerializer)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def trade_open(request):
@@ -133,7 +138,7 @@ def trade_open(request):
                        "data": serializer.data}
                 return Response(msg)
         return Response(serializer.errors)
-
+@swagger_auto_schema(methods=['post'], operation_description="You can close a trade with his id")
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 # TODO: Close a trade
@@ -168,7 +173,7 @@ def get_realtime_price(symbol):
     return Response(res)
 
 
-@api_view(['GET'])
+# @api_view(['GET'])
 def get_list_cryptocurrency(request):
     url = 'https://data.messari.io/api/v2/assets'
     res = requests.get(url).json()
