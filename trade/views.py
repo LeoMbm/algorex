@@ -140,7 +140,6 @@ def trade_open(request):
 @permission_classes([IsAuthenticated])
 # TODO: Close a trade
 def trade_close(request, trade_id):
-    # FIXME: Try to get profit or loss in response
     trade = Trade.objects.get(id=trade_id, profile_id=request.user)
     tradeValue = Trade.objects.filter(id=trade_id, profile_id=request.user).values().first()
     if request.method == 'POST':
