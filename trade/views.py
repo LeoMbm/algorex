@@ -84,15 +84,17 @@ def all_close_trade(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def closed_pnl(request):
-    trade = Trade.objects.filter(profile_id=request.user).aggregate(
-        PNL=Coalesce(Sum(F('close_price') * F('quantity')), 0.00))
+    # TODO: Calculate the pnl
+    trade = Trade.objects.filter(profile_id=request.user, open=False).aggregate(
+        PNL=Coalesce(Sum(F('close_price') - F('open_price')) * F('quantity'), 0.00))
     return Response(trade)
 
 @swagger_auto_schema(methods=['get'], operation_description="You can see all your profit and lose of open trades", responses={200: pnl_response})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def open_pnl(request):
-    trade = Trade.objects.filter(profile_id=request.user).aggregate(
+    # TODO: Calculate the pnl
+    trade = Trade.objects.filter(profile_id=request.user, open=True).aggregate(
         PNL=Coalesce(Sum(F('open_price') * F('quantity')), 0.00))
     return Response(trade)
 
