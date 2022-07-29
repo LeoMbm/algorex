@@ -168,7 +168,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 CORS_ALLOWED_ORIGINS = [
    
     "http://127.0.0.1:8000",
-    'https://algorex.herokuapp.com/',
+    'https://algorex.herokuapp.com',
 ]
 
 SWAGGER_SETTINGS = {
