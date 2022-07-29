@@ -36,7 +36,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['algorex.herokuapp.com']
 
 # Application definition
 
@@ -167,6 +167,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 CORS_ALLOWED_ORIGINS = [
    
     "http://127.0.0.1:8000",
+    'https://algorex.herokuapp.com/',
 ]
 
 SWAGGER_SETTINGS = {
