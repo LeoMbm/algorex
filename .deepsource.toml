@@ -1,9 +1,12 @@
 version = 1
 
 [[analyzers]]
-name = "shell"
+name = "python"
 enabled = true
 
+  [analyzers.meta]
+  runtime_version = "3.x.x"
+
 [[analyzers]]
-name = "javascript"
+name = "shell"
 enabled = true
